@@ -126,12 +126,12 @@ local UsernameBox = Tab9:AddTextbox({
 })
 
 Tab9:AddButton({
-	Name = "Убить всех",
+	Name = "Убивать всех",
 	Callback = function()
 		if game.Players.LocalPlayer.Character:FindFirstChild("Skull") == nil then
 			OrionLib:MakeNotification({
 				Name = "Ошибка!",
-				Content = "Ты должен быть скелетом!",
+				Content = "Ты должен быть черепом!",
 				Image = "rbxassetid://4483345998",
 				Time = 5
 			})
@@ -143,4 +143,81 @@ Tab9:AddButton({
 				end
 		end
 	end    
+})
+
+Tab9:AddButton({
+	Name = "Стать черепом",
+	Callback = function()
+      		game:GetService("ReplicatedStorage").RunMasteryAbility:FireServer()
+  	end    
+})
+local Section = Tab9:AddSection({
+	Name = "Автокилл"
+})
+local UsernameBo1x = Tab9:AddTextbox({
+	Name = "Юзернейм на чью команду будет регать: ",
+	Default = "",
+	TextDisappear = false,
+	Callback = function(Value)
+		local target1Abbreviation = Value
+		local target1Player
+		for _, v in pairs(game.Players:GetPlayers()) do
+			if string.sub(v.Name, 1, #target1Abbreviation):lower() == target1Abbreviation:lower() then
+				target1Player = v
+				break
+			end
+		end
+		if target1Player then
+			Selected1Username = target1Player.Name
+			OrionLib:MakeNotification({Name = "Имба",Content = "Найден игрок [ "..Selected1Username.." ]",Image = "rbxassetid://7733658504",Time = 5})
+		else
+			OrionLib:MakeNotification({Name = "Ошибка",Content = "Невозможно найти игрока",Image = "rbxassetid://7733658504",Time = 5})
+		end
+	end	  
+})
+
+Tab9:AddTextbox({
+	Name = "Команда: ",
+	Default = ";kill all",
+	TextDisappear = true,
+	Callback = function(Value)
+		CommandKill = Value
+	end	  
+})
+Tab9:AddButton({
+	Name = "Включить автокилл на команду",
+	Callback = function()
+      		local Players = game:GetService("Players")
+local ChatService = game:GetService("Chat")
+
+local TARGET_USERNAME = Selected1Username
+local COMMAND = CommandKill
+
+local function onChatMessage(player, message)
+    if player.Name == TARGET_USERNAME and message:lower() == COMMAND:lower() then
+        print(string.format("[EXPLOIT] Игрок %s написал команду: %s", player.Name, message))
+        for _, obj in pairs(game.Players:GetPlayers()) do
+					if obj.Name ~= game.Players.LocalPlayer.Name and obj.Name ~= Selected1Username then
+						obj.Character.HumanoidRootPart:PivotTo(game.Players.LocalPlayer.Character.Skull.Hitbox.CFrame)
+					end
+				end
+    end
+end
+
+-- Подключаем обработчик сообщений чата
+for _, player in ipairs(Players:GetPlayers()) do
+    player.Chatted:Connect(function(message)
+        onChatMessage(player, message)
+    end)
+end
+
+-- Обработчик для новых игроков
+Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(message)
+        onChatMessage(player, message)
+    end)
+end)
+
+print("Чат мониторинг активирован, ожидание команды...")
+  	end    
 })
