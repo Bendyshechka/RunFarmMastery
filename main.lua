@@ -8,6 +8,29 @@ local Tab7 = Window:MakeTab({
 	PremiumOnly = false
 })
 
+local function EquipGlove(Glove)
+	for i, v in pairs(game:GetService("ReplicatedStorage")._NETWORK:GetChildren()) do
+      -- Check if the name contains the character '{'
+      if v.Name:find("{") then
+          local args = {
+              [1] = Glove,
+			  [2] = true
+          }
+  
+          -- Check if v is a RemoteEvent and can FireServer
+          if v:IsA("RemoteEvent") then
+              v:FireServer(unpack(args))
+          elseif v:IsA("RemoteFunction") then
+              -- If it's a RemoteFunction, use InvokeServer
+              local result = v:InvokeServer(unpack(args))
+              print("Result from InvokeServer:", result)  -- Optional: Print the result
+          else
+              print("v is neither a RemoteEvent nor a RemoteFunction.")
+          end
+      end
+  end
+end
+
 local UsernameBox = Tab7:AddTextbox({
 	Name = "Кому помогать: ",
 	Default = "",
@@ -238,4 +261,36 @@ humanoidRootPart.CFrame = CFrame.new(17902, -15, -3534)
 wait(0.1)
 		end
 	end    
+})
+
+local Section = Tab9:AddSection({
+	Name = "Стать терри"
+})
+MimicGlove = "Default"
+
+Tab9:AddDropdown({
+	Name = "Маскировочная перчатка",
+	Default = "Default",
+	Options = {"Default", "Mace", "Dual", "Jet", "Ghost", "rob"},
+	Callback = function(Value)
+		MimicGlove = Value
+	end    
+})
+
+Tab9:AddButton({
+	Name = "Стать терри",
+	Callback = function()
+      		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(17902, -23, -3534)
+			wait(0.5)
+			EquipGlove("Ghost")
+			wait(1)
+			game.ReplicatedStorage.Ghostinvisibilityactivated:FireServer()
+			wait(1)
+			EquipGlove("Run")
+			wait(1)
+			game:GetService("ReplicatedStorage").RunMasteryAbility:FireServer()
+			EquipGlove(MimicGlove)
+			wait(1)
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.workspace.Origo.CFrame * CFrame.new(0,-5,0)
+  	end    
 })
