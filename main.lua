@@ -221,3 +221,21 @@ end)
 print("Чат мониторинг активирован, ожидание команды...")
   	end    
 })
+
+Tab9:AddToggle({
+	Name = "Закрепится у хантера",
+	Default = false,
+	Callback = function(Value)
+		while Value do
+			local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer  -- Получаем LocalPlayer
+
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Ждем загрузки персонажа
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")  -- Ждем загрузки HumanoidRootPart
+
+-- Устанавливаем новый CFrame
+humanoidRootPart.CFrame = CFrame.new(17902, -15, -3534)
+wait(0.1)
+		end
+	end    
+})
