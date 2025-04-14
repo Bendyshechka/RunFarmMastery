@@ -292,5 +292,6 @@ Tab9:AddButton({
 			EquipGlove(MimicGlove)
 			wait(1)
 			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.workspace.Origo.CFrame * CFrame.new(0,-5,0)
+			game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
   	end    
 })
