@@ -1,5 +1,5 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/Orion/Source.lua')))()
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Giangplay/Script/main/Fly_V3.lua"))()
 local Window = OrionLib:MakeWindow({Name = "Сигма ран помощь", HidePremium = false, SaveConfig = false})
 
 local Tab7 = Window:MakeTab({
@@ -126,6 +126,13 @@ local Tab9 = Window:MakeTab({
 	PremiumOnly = false
 })
 
+Tab9:AddButton({
+	Name = "Тепнутся на арену",
+	Callback = function()
+      		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.workspace.Origo.CFrame * CFrame.new(0,-5,0)
+  	end    
+})
+
 local UsernameBox = Tab9:AddTextbox({
 	Name = "Кого не убивать: ",
 	Default = "",
@@ -245,22 +252,62 @@ print("Чат мониторинг активирован, ожидание ко
   	end    
 })
 
+local anchorConnection  -- Переменная для управления подключением
+
 Tab9:AddToggle({
-	Name = "Закрепится у хантера",
-	Default = false,
-	Callback = function(Value)
-		while Value do
-			local players = game:GetService("Players")
-local localPlayer = players.LocalPlayer  -- Получаем LocalPlayer
+    Name = "Закрепить позицию",
+    Default = false,
+    Callback = function(Value)
+        -- Отключаем предыдущее закрепление (если было)
+        if anchorConnection then
+            anchorConnection:Disconnect()
+            anchorConnection = nil
+        end
 
-local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()  -- Ждем загрузки персонажа
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")  -- Ждем загрузки HumanoidRootPart
+        -- Если включено, запоминаем текущую позицию и фиксируем её
+        if Value then
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- Устанавливаем новый CFrame
-humanoidRootPart.CFrame = CFrame.new(17902, -15, -3534)
-wait(0.1)
-		end
-	end    
+            -- Запоминаем позицию, где активировали
+            local anchorPosition = humanoidRootPart.Position
+
+            -- Запускаем фиксацию через Heartbeat
+            anchorConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if character and humanoidRootPart then
+                    humanoidRootPart.CFrame = CFrame.new(anchorPosition)
+                end
+            end)
+        end
+    end
+})
+
+local teleportConnection -- Выносим наружу!
+
+Tab9:AddToggle({
+    Name = "Закрепиться у хантера",
+    Default = false,
+    Callback = function(Value)
+        -- Отключаем предыдущий цикл (если был)
+        if teleportConnection then
+            teleportConnection:Disconnect()
+            teleportConnection = nil
+        end
+
+        -- Если включено — запускаем новый цикл
+        if Value then
+            teleportConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                local player = game.Players.LocalPlayer
+                if player.Character then
+                    local root = player.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        root.CFrame = CFrame.new(17902, -15, -3534)
+                    end
+                end
+            end)
+        end
+    end
 })
 
 local Section = Tab9:AddSection({
@@ -271,7 +318,7 @@ MimicGlove = "Default"
 Tab9:AddDropdown({
 	Name = "Маскировочная перчатка",
 	Default = "Default",
-	Options = {"Default", "Mace", "Dual", "Jet", "Ghost", "rob"},
+	Options = {"Default", "Mace", "Dual", "Jet", "Ghost", "rob", "Pocket", "Diamond"},
 	Callback = function(Value)
 		MimicGlove = Value
 	end    
