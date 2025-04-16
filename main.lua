@@ -251,6 +251,63 @@ end)
 print("Чат мониторинг активирован, ожидание команды...")
   	end    
 })
+local GlobalCommand = ";kill all"
+-- Текстовый бокс для команды
+Tab9:AddTextbox({
+    Name = "Команда для активации(для всех)",
+    Default = ";kill all",
+    TextDisappear = true,
+    Callback = function(Value)
+        GlobalCommand = Value:lower() -- сохраняем команду в нижнем регистре
+    end
+})
+
+-- Кнопка для включения триггера
+Tab9:AddButton({
+    Name = "Включить автокилл на команду (для всех)",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local ChatService = game:GetService("Chat")
+
+        local function onChatMessage(player, message)
+            -- Проверяем, совпадает ли сообщение с заданной командой
+            if message:lower() == GlobalCommand then
+                print(string.format("[EXPLOIT] Игрок %s активировал команду: %s", player.Name, message))
+                
+                -- Телепортируем всех, кроме себя и активатора
+                for _, target in pairs(Players:GetPlayers()) do
+                    if target ~= player and target ~= Players.LocalPlayer then
+                        if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                            -- Телепорт к своему черепу (как в вашем коде)
+                            target.Character.HumanoidRootPart:PivotTo(Players.LocalPlayer.Character.Skull.Hitbox.CFrame)
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Подключаем обработчик чата для всех игроков
+        for _, player in ipairs(Players:GetPlayers()) do
+            player.Chatted:Connect(function(message)
+                onChatMessage(player, message)
+            end)
+        end
+
+        -- Обработчик для новых игроков
+        Players.PlayerAdded:Connect(function(player)
+            player.Chatted:Connect(function(message)
+                onChatMessage(player, message)
+            end)
+        end)
+
+        OrionLib:MakeNotification({
+            Name = "Готово!",
+            Content = "Триггер на команду '" .. GlobalCommand .. "' активирован",
+            Image = "rbxassetid://7733658504",
+            Time = 5
+        })
+    end
+})
 
 local anchorConnection  -- Переменная для управления подключением
 
