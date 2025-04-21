@@ -400,6 +400,108 @@ Tab9:AddButton({
   	end    
 })
 
+local TabCS = Window:MakeTab({
+    Name = "КС помощь",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local TargetPlayerName = ""
+local CSHelpEnabled = false
+
+-- Текстбокс для юзернейма
+local UsernameBoxCS = TabCS:AddTextbox({
+    Name = "Юзернейм игрока:",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(Value)
+        local targetAbbreviation = Value
+        local targetPlayer
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if string.sub(v.Name, 1, #targetAbbreviation):lower() == targetAbbreviation:lower() then
+                targetPlayer = v
+                break
+            end
+        end
+        if targetPlayer then
+            TargetPlayerName = targetPlayer.Name
+            OrionLib:MakeNotification({
+                Name = "Успех",
+                Content = "Найден игрок: " .. TargetPlayerName,
+                Image = "rbxassetid://7733658504",
+                Time = 5
+            })
+        else
+            OrionLib:MakeNotification({
+                Name = "Ошибка",
+                Content = "Игрок не найден!",
+                Image = "rbxassetid://7733658504",
+                Time = 5
+            })
+        end
+    end
+})
+
+-- Переключатель помощи
+TabCS:AddToggle({
+    Name = "Включить помощь",
+    Default = false,
+    Callback = function(Value)
+        CSHelpEnabled = Value
+        if Value then
+            OrionLib:MakeNotification({
+                Name = "Включено",
+                Content = "Поиск игроков для помощи...",
+                Image = "rbxassetid://7733658504",
+                Time = 5
+            })
+            
+            -- Запускаем цикл проверки
+            while CSHelpEnabled and task.wait(0.5) do
+                local myCharacter = game.Players.LocalPlayer.Character
+                if not myCharacter or not myCharacter:FindFirstChild("HumanoidRootPart") then
+                    continue
+                end
+
+                for _, player in ipairs(game.Players:GetPlayers()) do
+                    if player.Name == game.Players.LocalPlayer.Name then
+                        continue -- Пропускаем себя
+                    end
+
+                    local character = player.Character
+                    if character and character:FindFirstChild("isInArena") then
+                        local isInArena = character:FindFirstChild("isInArena")
+                        local lastSlapped = character:FindFirstChild("LastSlappedBy")
+
+                        if isInArena.Value and lastSlapped and lastSlapped.Value == TargetPlayerName then
+                            -- Телепортируем игрока к себе
+                            local hrp = character:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                hrp.CFrame = myCharacter.HumanoidRootPart.CFrame
+                                
+                                -- Обнуляем LastSlappedBy
+                                lastSlapped.Value = ""
+                                OrionLib:MakeNotification({
+                                    Name = "Помощь",
+                                    Content = "Игрок " .. player.Name .. " был телепортирован!",
+                                    Image = "rbxassetid://7733658504",
+                                    Time = 3
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            OrionLib:MakeNotification({
+                Name = "Отключено",
+                Content = "Помощь деактивирована.",
+                Image = "rbxassetid://7733658504",
+                Time = 3
+            })
+        end
+    end
+})
 
 if workspace:FindFirstChild("BobWalk1") == nil then
 local BobWalk1 = Instance.new("Part", workspace)
